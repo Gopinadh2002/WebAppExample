@@ -2,23 +2,24 @@ pipeline {
     agent any
 
     environment {
-        // SonarQube server configuration (ensure it matches your Jenkins setup)
-        SONARQUBE_SERVER = 'SonarQube'  // This should match the name configured in Jenkins
-        SONAR_HOST_URL = 'http://localhost:9000'  // SonarQube server URL
-        SONAR_AUTH_TOKEN = '<your-sonarqube-authentication-token>'  // Set your SonarQube token
+        // Define environment variables for SonarQube
+        SONARQUBE_SERVER = 'SonarQube' // This should match your SonarQube server configuration in Jenkins
+        SONAR_HOST_URL = 'http://localhost:9000' // SonarQube URL
+        SONAR_AUTH_TOKEN = '<your-sonarqube-auth-token>' // Your SonarQube authentication token
+        PROJECT_KEY = 'my-project' // Your SonarQube project key
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                checkout scm // Checkout the code from the source control repository
             }
         }
 
         stage('Build') {
             steps {
                 script {
-                    // Build the project (for Maven, use this)
+                    // Build the project (For Maven, use mvn clean install)
                     sh 'mvn clean install'
                 }
             }
@@ -27,7 +28,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script {
-                    // Run unit tests and generate test reports (for Maven)
+                    // Run unit tests (For Maven, this command runs unit tests and generates reports)
                     sh 'mvn test'
                 }
             }
@@ -36,10 +37,10 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv(SONARQUBE_SERVER) {
-                    // Run SonarQube analysis
+                    // Run SonarQube analysis with Maven
                     sh '''
                         mvn sonar:sonar \
-                            -Dsonar.projectKey=my-project \
+                            -Dsonar.projectKey=${PROJECT_KEY} \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_AUTH_TOKEN}
                     '''
@@ -50,11 +51,11 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    // Wait for SonarQube analysis to complete and retrieve the quality gate status
+                    // Wait for the quality gate status from SonarQube
                     timeout(time: 1, unit: 'MINUTES') {
-                        def qg = waitForQualityGate()  // Blocks until the quality gate is checked
+                        def qg = waitForQualityGate()
                         if (qg.status != 'OK') {
-                            error "Pipeline failed due to quality gate failure: ${qg.status}"  // Fail the build if the gate fails
+                            error "Pipeline failed due to quality gate failure: ${qg.status}"
                         }
                     }
                 }
@@ -64,7 +65,7 @@ pipeline {
 
     post {
         success {
-            echo "Build and analysis successful!"
+            echo "Build and quality gate passed!"
         }
         failure {
             echo "Build failed or quality gate not met!"
