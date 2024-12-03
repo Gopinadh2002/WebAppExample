@@ -5,7 +5,7 @@ pipeline {
         // Define environment variables for SonarQube
         SONARQUBE_SERVER = 'SonarQube' // This should match your SonarQube server configuration in Jenkins
         SONAR_HOST_URL = 'http://localhost:9000' // SonarQube URL
-        SONAR_AUTH_TOKEN = '<your-sonarqube-auth-token>' // Your SonarQube authentication token
+        SONAR_AUTH_TOKEN = 'sqp_a2192a8909f0ea589348e097cc02cbdb5c5318e0' // Your SonarQube authentication token
         PROJECT_KEY = 'my-project' // Your SonarQube project key
     }
 
